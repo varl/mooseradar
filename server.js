@@ -25,7 +25,6 @@ app.get('/place/:location/:type', function (req, res) {
   var options = {
     key: KEY,
     radius: 300,
-    type: 'restaurant',
     rating: 4 
   };
 
