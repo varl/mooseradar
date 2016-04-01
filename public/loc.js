@@ -62,13 +62,14 @@ function render(html) {
   app.innerHTML = html;
 }
 
-// instantiate the geolock
-navigator.geolocation.getCurrentPosition(function(position) {
-  var types = ['lodging', 'restaurant', 'atm', 'museum', 'night_club', 'spa',
-    'stadium', 'zoo', 'cafe', 'amusement_park'];
+// run on load
+function init() {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    var types = ['lodging', 'restaurant', 'museum', 'night_club', 'spa', 'cafe'];
 
-  var nearby = suggestions(
-        position.coords.latitude,
-        position.coords.longitude,
-        types[Math.floor(Math.random() * types.length)]);
-});
+    var nearby = suggestions(
+          position.coords.latitude,
+          position.coords.longitude,
+          types[Math.floor(Math.random() * types.length)]);
+  });
+}
