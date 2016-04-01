@@ -1,16 +1,28 @@
-var express = require('express');
-var app = express();
-var https = require('https');
+'use strict';
 
+var express = require('express'),
+    get = require('./lib/xhr');
+
+// setup local server parameters
+var port = process.env.PORT || 3000,
+    app = express();
+
+// application-wide constants
 var KEY = 'AIzaSyCJbM70-MigqM9NdfSkDMEMtM14W-JGA78',
-    NEARBY_PATH = '/maps/api/place/nearbysearch/json'
+    NEARBY_PATH = '/maps/api/place/nearbysearch/json',
+    DETAILS_PATH = '/maps/api/place/details/json',
     SERVICE_URL = 'maps.googleapis.com';
 
-app.get('/place/:location', function (req, res) {
-  console.log('bing');
+/*
+ * min/max lat:   -90/90    = 180 = 100%
+ * min/max long:  -180/180  = 360 = 100%
+ */
+
+app.get('/place/:location/:type', function (req, res) {
+  var location = req.params.location,
+      type = req.params.type;
 
   var options = {
-    details_url: SERVICE_URL + '/details/json',
     key: KEY,
     radius: 300,
     type: 'restaurant',
@@ -18,41 +30,22 @@ app.get('/place/:location', function (req, res) {
   };
 
   var url = NEARBY_PATH +
-    '?location='+ req.params.location +
+    '?location=' + location +
     '&key=' + options.key +
     '&radius=' + options.radius +
     '&rating=' + options.rating +
-    '&type=' + options.type;
+    '&type=' + type;
 
-  function callback(response) {
-    console.log(response);
+  var callback = function (client_res, body) {
+    client_res.send(JSON.stringify(body));
+  }.bind(null, res);
 
-    res.send(JSON.stringify(response)); //send this back to the client
-  }
-
-  https.get({
-    host: SERVICE_URL,
-    path: url,
-  }, function(response) {
-    // Continuously update stream with data
-    var body = '';
-    response.on('data', function(d) {
-      body += d;
-    });
-    response.on('end', function() {
-      // Data reception is done, do whatever with it!
-      var parsed = JSON.parse(body);
-      callback(parsed);
-    });
-  });
+  return get({host: SERVICE_URL, path: url}, callback);
 });
 
-
-
-
+// serve the client assets
 app.use(express.static('public'));
 
-var port = process.env.PORT || 3000;
 app.listen(port, function () {
     console.log('Example app listening on port %d!', port);
 });
